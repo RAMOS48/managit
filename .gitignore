@@ -1,0 +1,17 @@
+# Python
+venv/
+__pycache__/
+*.pyc
+
+# Secrets and local config
+.env
+agent/config.json
+
+# Databases and logs
+*.db
+*.sqlite3
+*.log
+
+# Editor / OS
+.vscode/
+.DS_Store
