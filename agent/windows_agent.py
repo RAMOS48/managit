@@ -12,13 +12,16 @@ from urllib.parse import urlparse
 import psutil
 import requests
 
-AGENT_VERSION = "0.2.0"
+import diagnostics
+
+AGENT_VERSION = "0.3.0"
 BASE_DIR = Path(__file__).resolve().parent
 CONFIG_PATH = BASE_DIR / "config.json"
 STATE_PATH = BASE_DIR / "state.json"
 LOG_PATH = BASE_DIR / "agent.log"
 REQUEST_TIMEOUT = 10  # seconds
 RETRIES = 3
+POLL_INTERVAL = 5     # seconds between checks for diagnostic jobs
 
 log = logging.getLogger("agent")
 
@@ -101,6 +104,50 @@ def post_json(config: dict, path: str, payload: dict):
     return None
 
 
+def fetch_jobs(config: dict, device_id: int):
+    """Ask the server for pending diagnostic jobs.
+    Returns a list (empty on a temporary problem), or None if the server
+    does not know this device any more."""
+    headers = {"X-Agent-Token": config.get("agent_token", "")}
+    try:
+        resp = requests.get(
+            f"{config['server_url']}/api/agent/jobs",
+            params={"device_id": device_id},
+            headers=headers,
+            timeout=REQUEST_TIMEOUT,
+        )
+    except (requests.ConnectionError, requests.Timeout):
+        return []  # the heartbeat already reports connection problems
+    if resp.status_code in (401, 403):
+        raise AuthError(f"Server rejected the agent token ({resp.status_code})")
+    if resp.status_code == 404:
+        return None
+    if resp.status_code != 200:
+        log.warning("Job poll refused (%d)", resp.status_code)
+        return []
+    return resp.json()
+
+
+def handle_job(config: dict, device_id: int, job: dict) -> None:
+    log.info("Running diagnostic job %s (%s)", job["id"], job["operation"])
+    started = time.monotonic()
+    result = diagnostics.run_job(job["operation"], job["parameters"], AGENT_VERSION)
+    payload = {
+        "device_id": device_id,
+        "success": result["success"],
+        "summary": result["summary"],
+        "duration": round(time.monotonic() - started, 2),
+        "error": result["error"],
+    }
+    resp = post_json(config, f"/api/agent/jobs/{job['id']}/result", payload)
+    if resp is None:
+        log.warning("Could not send the result of job %s", job["id"])
+    elif resp.status_code == 200:
+        log.info("Result of job %s sent", job["id"])
+    else:
+        log.error("Result of job %s refused (%d): %s", job["id"], resp.status_code, resp.text)
+
+
 def register(config: dict, agent_id: str) -> int | None:
     payload = {
         "agent_id": agent_id,
@@ -134,6 +181,7 @@ def run() -> None:
     log.info("Agent %s starting (version %s)", agent_id, AGENT_VERSION)
 
     device_id = None
+    last_heartbeat = 0.0
     while True:
         if device_id is None:
             device_id = register(config, agent_id)
@@ -142,25 +190,36 @@ def run() -> None:
                 time.sleep(30)
                 continue
             log.info("Registered as device %d", device_id)
+            last_heartbeat = 0.0  # send a heartbeat right away
 
-        payload = {
-            "device_id": device_id,
-            "ip_address": get_local_ip(config["server_url"]),
-            **collect_metrics(),
-        }
-        resp = post_json(config, "/api/devices/heartbeat", payload)
-        if resp is None:
-            log.warning("Server unreachable, will try again next cycle")
-        elif resp.status_code == 200:
-            log.info("Heartbeat sent")
-        elif resp.status_code == 404:
+        if time.monotonic() - last_heartbeat >= interval:
+            payload = {
+                "device_id": device_id,
+                "ip_address": get_local_ip(config["server_url"]),
+                **collect_metrics(),
+            }
+            resp = post_json(config, "/api/devices/heartbeat", payload)
+            if resp is None:
+                log.warning("Server unreachable, will try again next cycle")
+            elif resp.status_code == 200:
+                log.info("Heartbeat sent")
+            elif resp.status_code == 404:
+                log.warning("Server does not know this device, re-registering")
+                device_id = None
+                continue
+            else:
+                log.error("Heartbeat refused (%d): %s", resp.status_code, resp.text)
+            last_heartbeat = time.monotonic()
+
+        jobs = fetch_jobs(config, device_id)
+        if jobs is None:
             log.warning("Server does not know this device, re-registering")
             device_id = None
             continue
-        else:
-            log.error("Heartbeat refused (%d): %s", resp.status_code, resp.text)
+        for job in jobs:
+            handle_job(config, device_id, job)
 
-        time.sleep(interval)
+        time.sleep(POLL_INTERVAL)
 
 
 def main() -> None:
