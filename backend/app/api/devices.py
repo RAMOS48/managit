@@ -4,6 +4,7 @@ from sqlalchemy import select
 from sqlalchemy.orm import Session
 
 from app.database import get_db
+from app.security.agent_auth import require_agent_token
 from app.models.models import Device, MetricSnapshot, utcnow
 from app.schemas.device import DeviceRegister, HeartbeatIn, DeviceOut, MetricOut
 
@@ -38,7 +39,7 @@ def to_out(db: Session, device: Device) -> DeviceOut:
     return out
 
 
-@router.post("/register", response_model=DeviceOut)
+@router.post("/register", response_model=DeviceOut, dependencies=[Depends(require_agent_token)])
 def register_device(payload: DeviceRegister, db: Session = Depends(get_db)):
     # Same agent_id registering again (agent restart) updates the existing device
     device = db.scalars(
@@ -58,7 +59,7 @@ def register_device(payload: DeviceRegister, db: Session = Depends(get_db)):
     return to_out(db, device)
 
 
-@router.post("/heartbeat")
+@router.post("/heartbeat", dependencies=[Depends(require_agent_token)])
 def heartbeat(payload: HeartbeatIn, db: Session = Depends(get_db)):
     device = db.get(Device, payload.device_id)
     if device is None:
