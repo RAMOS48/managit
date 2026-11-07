@@ -1,3 +1,5 @@
+from contextlib import asynccontextmanager
+from datetime import timedelta
 from pathlib import Path
 
 from dotenv import load_dotenv
@@ -5,14 +7,30 @@ from dotenv import load_dotenv
 load_dotenv(Path(__file__).resolve().parents[1] / ".env")
 
 from fastapi import FastAPI  # noqa: E402
-from app.database import Base, engine  # noqa: E402
+from sqlalchemy import delete  # noqa: E402
+from app.database import Base, SessionLocal, engine  # noqa: E402
 from app.models import models  # noqa: E402, F401
-from app.api import devices  # noqa: E402
+from app.models.models import MetricSnapshot, utcnow  # noqa: E402
+from app.api import devices, monitoring  # noqa: E402
+
+METRIC_RETENTION_DAYS = 7
 
 Base.metadata.create_all(bind=engine)
 
-app = FastAPI(title="ManaGit - IT Management Platform", version="0.1.0")
+
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    # Remove old metric snapshots so the SQLite file does not grow forever
+    with SessionLocal() as db:
+        cutoff = utcnow() - timedelta(days=METRIC_RETENTION_DAYS)
+        db.execute(delete(MetricSnapshot).where(MetricSnapshot.collected_at < cutoff))
+        db.commit()
+    yield
+
+
+app = FastAPI(title="ManaGit - IT Management Platform", version="0.1.0", lifespan=lifespan)
 app.include_router(devices.router)
+app.include_router(monitoring.router)
 
 
 @app.get("/health")
