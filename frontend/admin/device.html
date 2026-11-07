@@ -34,6 +34,37 @@
       </div>
     </section>
 
+    <section class="panel" id="diag-panel">
+      <h3>Run a diagnostic</h3>
+      <div class="diag-form">
+        <label>Operation
+          <select id="diag-op"></select>
+        </label>
+        <label id="diag-host-wrap">Host
+          <input id="diag-host" type="text" maxlength="253" placeholder="IP address or hostname">
+        </label>
+        <label id="diag-port-wrap">Port
+          <input id="diag-port" type="number" min="1" max="65535" placeholder="e.g. 445">
+        </label>
+        <button id="diag-run" class="btn" type="button">Run</button>
+      </div>
+      <div id="diag-message" class="msg-ok"></div>
+
+      <h3>Result</h3>
+      <pre id="diag-output" class="output">No diagnostic selected.</pre>
+
+      <h3>History</h3>
+      <table>
+        <thead>
+          <tr>
+            <th>Time</th><th>Operation</th><th>Target</th><th>Status</th>
+            <th>Outcome</th><th>Duration</th><th></th>
+          </tr>
+        </thead>
+        <tbody id="diag-rows"></tbody>
+      </table>
+    </section>
+
     <section class="panel">
       <h3>Recent metrics</h3>
       <table>
@@ -46,5 +77,6 @@
   </main>
   <script src="app.js"></script>
   <script src="device.js"></script>
+  <script src="diagnostics.js"></script>
 </body>
 </html>
