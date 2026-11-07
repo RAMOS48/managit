@@ -28,3 +28,19 @@ td a:hover { text-decoration: underline; }
 .tag { display: inline-block; padding: 1px 7px; border-radius: 4px; font-size: 11px; background: #e4e7eb; color: #52606d; margin-left: 6px; }
 .warn { color: #c0392b; font-weight: 600; }
 .error { background: #fde2df; color: #9b2c20; padding: 10px 14px; border-radius: 6px; margin-bottom: 16px; }
+
+/* Device detail page */
+.back { display: inline-block; margin-bottom: 12px; color: #1f5fa8; text-decoration: none; font-size: 14px; }
+.back:hover { text-decoration: underline; }
+.page-title { display: flex; align-items: center; gap: 12px; margin: 0 0 16px; }
+.page-title h2 { margin: 0; font-size: 24px; }
+.two-col { display: grid; grid-template-columns: repeat(auto-fit, minmax(340px, 1fr)); gap: 16px; margin-bottom: 16px; }
+.panel h3 { margin: 0 0 12px; font-size: 16px; }
+dl.info { display: grid; grid-template-columns: 140px 1fr; gap: 8px 12px; margin: 0; font-size: 14px; }
+dl.info dt { color: #52606d; }
+dl.info dd { margin: 0; word-break: break-all; }
+.meter { margin-bottom: 14px; }
+.meter .meter-head { display: flex; justify-content: space-between; font-size: 14px; margin-bottom: 4px; }
+.meter .bar { height: 10px; background: #e4e7eb; border-radius: 5px; overflow: hidden; }
+.meter .fill { height: 100%; background: #2f80ed; }
+.meter .fill.high { background: #c0392b; }

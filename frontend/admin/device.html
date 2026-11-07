@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>ManaGit - Device</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <header>
+    <h1>ManaGit</h1>
+    <nav>
+      <a href="index.html">Dashboard</a>
+    </nav>
+  </header>
+  <main>
+    <a class="back" href="index.html">&larr; Back to dashboard</a>
+    <div id="error" class="error" hidden></div>
+
+    <div class="page-title">
+      <h2 id="title">Loading...</h2>
+      <span id="status-badge"></span>
+    </div>
+
+    <section class="two-col">
+      <div class="panel">
+        <h3>Device information</h3>
+        <dl class="info" id="info"></dl>
+      </div>
+      <div class="panel">
+        <h3>Current resource usage</h3>
+        <div id="meters"></div>
+        <div class="muted" id="metrics-time"></div>
+      </div>
+    </section>
+
+    <section class="panel">
+      <h3>Recent metrics</h3>
+      <table>
+        <thead>
+          <tr><th>Time</th><th>CPU</th><th>RAM</th><th>Disk</th></tr>
+        </thead>
+        <tbody id="history-rows"></tbody>
+      </table>
+    </section>
+  </main>
+  <script src="app.js"></script>
+  <script src="device.js"></script>
+</body>
+</html>
