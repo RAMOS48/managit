@@ -7,6 +7,8 @@ from dotenv import load_dotenv
 load_dotenv(Path(__file__).resolve().parents[1] / ".env")
 
 from fastapi import FastAPI  # noqa: E402
+from fastapi.responses import RedirectResponse  # noqa: E402
+from fastapi.staticfiles import StaticFiles  # noqa: E402
 from sqlalchemy import delete  # noqa: E402
 from app.database import Base, SessionLocal, engine  # noqa: E402
 from app.models import models  # noqa: E402, F401
@@ -14,6 +16,7 @@ from app.models.models import MetricSnapshot, utcnow  # noqa: E402
 from app.api import devices, monitoring  # noqa: E402
 
 METRIC_RETENTION_DAYS = 7
+FRONTEND_DIR = Path(__file__).resolve().parents[2] / "frontend"
 
 Base.metadata.create_all(bind=engine)
 
@@ -36,3 +39,12 @@ app.include_router(monitoring.router)
 @app.get("/health")
 def health():
     return {"status": "ok"}
+
+
+@app.get("/", include_in_schema=False)
+def root():
+    return RedirectResponse("/admin/")
+
+
+# Mounted last so it never shadows the API routes
+app.mount("/admin", StaticFiles(directory=FRONTEND_DIR / "admin", html=True), name="admin")

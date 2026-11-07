@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>ManaGit - Dashboard</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <header>
+    <h1>ManaGit</h1>
+    <nav>
+      <a href="index.html" class="active">Dashboard</a>
+    </nav>
+  </header>
+  <main>
+    <div id="error" class="error" hidden></div>
+
+    <section class="cards">
+      <div class="card"><div class="label">Total devices</div><div class="value" id="c-total">-</div></div>
+      <div class="card online"><div class="label">Online</div><div class="value" id="c-online">-</div></div>
+      <div class="card offline"><div class="label">Offline</div><div class="value" id="c-offline">-</div></div>
+      <div class="card"><div class="label">Simulated</div><div class="value" id="c-simulated">-</div></div>
+      <div class="card"><div class="label">Open tickets</div><div class="value" id="c-tickets">-</div></div>
+    </section>
+
+    <section class="panel">
+      <div class="toolbar">
+        <input id="search" type="search" placeholder="Search hostname, IP, department, owner...">
+        <select id="status-filter">
+          <option value="all">All statuses</option>
+          <option value="online">Online</option>
+          <option value="offline">Offline</option>
+        </select>
+        <span class="spacer"></span>
+        <span class="muted" id="refreshed"></span>
+      </div>
+      <table>
+        <thead>
+          <tr>
+            <th>Status</th><th>Hostname</th><th>Type</th><th>OS</th><th>IP address</th>
+            <th>Department</th><th>Owner</th><th>CPU</th><th>RAM</th><th>Disk</th><th>Last seen</th>
+          </tr>
+        </thead>
+        <tbody id="device-rows"></tbody>
+      </table>
+    </section>
+  </main>
+  <script src="app.js"></script>
+  <script src="dashboard.js"></script>
+</body>
+</html>

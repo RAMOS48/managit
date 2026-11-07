@@ -1,0 +1,30 @@
+* { box-sizing: border-box; }
+body { margin: 0; font-family: system-ui, Arial, sans-serif; background: #f4f6f8; color: #1f2933; }
+header { background: #1f3a5f; color: #fff; padding: 14px 24px; display: flex; align-items: center; gap: 24px; }
+header h1 { font-size: 18px; margin: 0; }
+header nav a { color: #cfe0f5; text-decoration: none; margin-right: 16px; }
+header nav a:hover, header nav a.active { color: #fff; }
+main { max-width: 1200px; margin: 0 auto; padding: 24px; }
+.cards { display: grid; grid-template-columns: repeat(auto-fit, minmax(170px, 1fr)); gap: 16px; margin-bottom: 24px; }
+.card { background: #fff; border-radius: 8px; padding: 16px; box-shadow: 0 1px 3px rgba(0,0,0,.1); }
+.card .label { font-size: 13px; color: #52606d; }
+.card .value { font-size: 30px; font-weight: 600; margin-top: 4px; }
+.card.online .value { color: #1b8a4b; }
+.card.offline .value { color: #c0392b; }
+.panel { background: #fff; border-radius: 8px; padding: 16px; box-shadow: 0 1px 3px rgba(0,0,0,.1); }
+.toolbar { display: flex; gap: 12px; margin-bottom: 12px; flex-wrap: wrap; align-items: center; }
+.toolbar input, .toolbar select { padding: 7px 10px; border: 1px solid #cbd2d9; border-radius: 6px; font-size: 14px; }
+.toolbar .spacer { flex: 1; }
+.muted { color: #7b8794; font-size: 13px; }
+table { width: 100%; border-collapse: collapse; font-size: 14px; }
+th, td { text-align: left; padding: 9px 8px; border-bottom: 1px solid #e4e7eb; }
+th { color: #52606d; font-weight: 600; font-size: 13px; }
+tr:hover td { background: #f8fafc; }
+td a { color: #1f5fa8; text-decoration: none; font-weight: 600; }
+td a:hover { text-decoration: underline; }
+.badge { display: inline-block; padding: 2px 10px; border-radius: 12px; font-size: 12px; font-weight: 600; }
+.badge.online { background: #d6f5e3; color: #11693a; }
+.badge.offline { background: #fde2df; color: #9b2c20; }
+.tag { display: inline-block; padding: 1px 7px; border-radius: 4px; font-size: 11px; background: #e4e7eb; color: #52606d; margin-left: 6px; }
+.warn { color: #c0392b; font-weight: 600; }
+.error { background: #fde2df; color: #9b2c20; padding: 10px 14px; border-radius: 6px; margin-bottom: 16px; }
