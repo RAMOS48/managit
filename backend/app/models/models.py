@@ -56,6 +56,7 @@ class Ticket(Base):
 
     id: Mapped[int] = mapped_column(primary_key=True)
     requester_id: Mapped[int | None] = mapped_column(ForeignKey("users.id"), nullable=True)
+    requester_name: Mapped[str | None] = mapped_column(String(100), nullable=True)
     device_id: Mapped[int | None] = mapped_column(ForeignKey("devices.id"), nullable=True)
     category: Mapped[str] = mapped_column(String(30))
     priority: Mapped[str] = mapped_column(String(20), default="medium")

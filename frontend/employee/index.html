@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>ManaGit - Report a problem</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <header><h1>ManaGit - IT Support</h1></header>
+  <main>
+    <div class="panel">
+      <h2>Report a problem</h2>
+      <p class="muted">Describe the issue and the IT team will take care of it.</p>
+
+      <div id="success" class="success" hidden></div>
+      <div id="error" class="error" hidden></div>
+
+      <form id="ticket-form">
+        <label>Your name
+          <input id="f-name" type="text" required minlength="2" maxlength="100">
+        </label>
+
+        <label>Affected device
+          <select id="f-device"></select>
+        </label>
+
+        <div class="row">
+          <label>Category
+            <select id="f-category" required></select>
+          </label>
+          <label>Priority
+            <select id="f-priority" required></select>
+          </label>
+        </div>
+
+        <label>Short title
+          <input id="f-title" type="text" required minlength="3" maxlength="150"
+                 placeholder="e.g. Cannot access shared folders">
+        </label>
+
+        <label>Description
+          <textarea id="f-description" required minlength="10" maxlength="5000"
+                    placeholder="What happened? When did it start? Any error message?"></textarea>
+        </label>
+
+        <button id="f-submit" class="btn" type="submit">Submit ticket</button>
+      </form>
+    </div>
+  </main>
+  <script src="portal.js"></script>
+</body>
+</html>
