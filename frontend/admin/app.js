@@ -2,12 +2,56 @@
 // Everything from the API is inserted with textContent, never innerHTML,
 // so a malicious hostname sent by an agent cannot inject HTML or scripts.
 
+function goToLogin() {
+  location.href = "/login/";
+}
+
 async function api(path) {
   const response = await fetch(path);
+  if (response.status === 401) {
+    goToLogin();
+    throw new Error("Session expired");
+  }
   if (!response.ok) {
     throw new Error(response.status + " " + response.statusText);
   }
   return response.json();
+}
+
+async function sendJson(method, path, body) {
+  const response = await fetch(path, {
+    method,
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(body),
+  });
+  let data = null;
+  try {
+    data = await response.json();
+  } catch (err) {
+    // the response had no JSON body
+  }
+  if (response.status === 401) {
+    goToLogin();
+    throw new Error("Session expired");
+  }
+  if (!response.ok) {
+    let detail = response.status + " " + response.statusText;
+    if (data && typeof data.detail === "string") {
+      detail = data.detail;
+    } else if (data && Array.isArray(data.detail)) {
+      detail = data.detail.map((d) => d.msg).join("; ");
+    }
+    throw new Error(detail);
+  }
+  return data;
+}
+
+function apiPost(path, body) {
+  return sendJson("POST", path, body);
+}
+
+function apiPatch(path, body) {
+  return sendJson("PATCH", path, body);
 }
 
 // The server sends naive UTC timestamps (no timezone), so mark them as UTC.
@@ -34,50 +78,50 @@ function showError(message) {
   box.hidden = !message;
 }
 
-async function apiPost(path, body) {
-  const response = await fetch(path, {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify(body),
-  });
-  let data = null;
+// Session guard: login required, administrators only, plus the user box in the header.
+async function initSession() {
+  let me;
   try {
-    data = await response.json();
-  } catch (err) {
-    // the response had no JSON body
-  }
-  if (!response.ok) {
-    let detail = response.status + " " + response.statusText;
-    if (data && typeof data.detail === "string") {
-      detail = data.detail;
-    } else if (data && Array.isArray(data.detail)) {
-      detail = data.detail.map((d) => d.msg).join("; ");
+    const response = await fetch("/api/auth/me");
+    if (response.status === 401) {
+      goToLogin();
+      return;
     }
-    throw new Error(detail);
+    if (!response.ok) return;
+    me = await response.json();
+  } catch (err) {
+    return;
   }
-  return data;
+
+  if (me.role !== "admin") {
+    location.href = "/portal/";
+    return;
+  }
+
+  const header = document.querySelector("header");
+  if (!header) return;
+  const box = document.createElement("div");
+  box.className = "userbox";
+
+  const name = document.createElement("span");
+  name.textContent = me.full_name || me.username;
+
+  const button = document.createElement("button");
+  button.type = "button";
+  button.className = "logout";
+  button.textContent = "Log out";
+  button.addEventListener("click", async () => {
+    try {
+      await fetch("/api/auth/logout", { method: "POST" });
+    } catch (err) {
+      // leave anyway
+    }
+    goToLogin();
+  });
+
+  box.appendChild(name);
+  box.appendChild(button);
+  header.appendChild(box);
 }
 
-async function apiPatch(path, body) {
-  const response = await fetch(path, {
-    method: "PATCH",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify(body),
-  });
-  let data = null;
-  try {
-    data = await response.json();
-  } catch (err) {
-    // the response had no JSON body
-  }
-  if (!response.ok) {
-    let detail = response.status + " " + response.statusText;
-    if (data && typeof data.detail === "string") {
-      detail = data.detail;
-    } else if (data && Array.isArray(data.detail)) {
-      detail = data.detail.map((d) => d.msg).join("; ");
-    }
-    throw new Error(detail);
-  }
-  return data;
-}
+initSession();

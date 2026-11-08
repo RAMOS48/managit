@@ -46,9 +46,10 @@ def health():
 
 @app.get("/", include_in_schema=False)
 def root():
-    return RedirectResponse("/admin/")
+    return RedirectResponse("/login/")
 
 
 # Mounted last so they never shadow the API routes
 app.mount("/admin", StaticFiles(directory=FRONTEND_DIR / "admin", html=True), name="admin")
 app.mount("/portal", StaticFiles(directory=FRONTEND_DIR / "employee", html=True), name="portal")
+app.mount("/login", StaticFiles(directory=FRONTEND_DIR / "login", html=True), name="login")

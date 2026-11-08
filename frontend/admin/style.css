@@ -81,3 +81,8 @@ tr.selected td { background: #eef4fb; }
 .edit-form label { display: flex; flex-direction: column; gap: 4px; font-size: 13px; color: #52606d; }
 .edit-form select, .edit-form textarea { padding: 8px 10px; border: 1px solid #cbd2d9; border-radius: 6px; font-size: 14px; font-family: inherit; }
 .edit-form textarea { min-height: 120px; resize: vertical; }
+
+/* Logged-in user box */
+header .userbox { margin-left: auto; display: flex; align-items: center; gap: 12px; font-size: 14px; }
+header .userbox button.logout { background: transparent; color: #fff; border: 1px solid #8fb0d9; border-radius: 6px; padding: 5px 12px; cursor: pointer; font-size: 13px; }
+header .userbox button.logout:hover { background: #2c4f7c; }

@@ -1,8 +1,16 @@
 // Employee portal. Server data is inserted with textContent only.
 const el = (id) => document.getElementById(id);
 
+function goToLogin() {
+  location.href = "/login/";
+}
+
 async function getJson(path) {
   const response = await fetch(path);
+  if (response.status === 401) {
+    goToLogin();
+    throw new Error("Session expired");
+  }
   if (!response.ok) throw new Error(response.status + " " + response.statusText);
   return response.json();
 }
@@ -18,6 +26,10 @@ async function postJson(path, body) {
     data = await response.json();
   } catch (err) {
     // no JSON body
+  }
+  if (response.status === 401) {
+    goToLogin();
+    throw new Error("Session expired");
   }
   if (!response.ok) {
     let detail = response.status + " " + response.statusText;
@@ -58,7 +70,97 @@ function fillSelect(select, items, valueOf, labelOf) {
   }
 }
 
+function parseUtc(value) {
+  const hasZone = /Z$|[+-]\d\d:\d\d$/.test(value);
+  return new Date(hasZone ? value : value + "Z");
+}
+
+function buildUserBox(me) {
+  const header = document.querySelector("header");
+  const box = document.createElement("div");
+  box.className = "userbox";
+
+  if (me.role === "admin") {
+    const link = document.createElement("a");
+    link.href = "/admin/";
+    link.textContent = "Admin dashboard";
+    box.appendChild(link);
+  }
+
+  const name = document.createElement("span");
+  name.textContent = me.full_name || me.username;
+  box.appendChild(name);
+
+  const button = document.createElement("button");
+  button.type = "button";
+  button.className = "logout";
+  button.textContent = "Log out";
+  button.addEventListener("click", async () => {
+    try {
+      await fetch("/api/auth/logout", { method: "POST" });
+    } catch (err) {
+      // leave anyway
+    }
+    goToLogin();
+  });
+  box.appendChild(button);
+  header.appendChild(box);
+}
+
+function cell(text) {
+  const td = document.createElement("td");
+  td.textContent = text || "-";
+  return td;
+}
+
+function renderTickets(tickets) {
+  const body = el("my-rows");
+  body.replaceChildren();
+
+  if (tickets.length === 0) {
+    const tr = document.createElement("tr");
+    const td = cell("You have not submitted any ticket yet.");
+    td.colSpan = 5;
+    tr.appendChild(td);
+    body.appendChild(tr);
+    return;
+  }
+
+  for (const ticket of tickets) {
+    const tr = document.createElement("tr");
+    tr.appendChild(cell(ticket.reference));
+    tr.appendChild(cell(ticket.title));
+
+    const statusTd = document.createElement("td");
+    const badge = document.createElement("span");
+    badge.className = "badge " + ticket.status.toLowerCase().replace(/ /g, "-");
+    badge.textContent = ticket.status;
+    statusTd.appendChild(badge);
+    tr.appendChild(statusTd);
+
+    tr.appendChild(cell(parseUtc(ticket.created_at).toLocaleString()));
+    tr.appendChild(cell(ticket.resolution_note));
+    body.appendChild(tr);
+  }
+}
+
+async function loadTickets() {
+  try {
+    renderTickets(await getJson("/api/my/tickets?limit=20"));
+  } catch (err) {
+    // a real problem is already shown by the form code
+  }
+}
+
 async function init() {
+  let me;
+  try {
+    me = await getJson("/api/auth/me");
+  } catch (err) {
+    return; // not logged in: already redirected to the login page
+  }
+  buildUserBox(me);
+
   try {
     const [options, devices] = await Promise.all([
       getJson("/api/portal/options"),
@@ -74,6 +176,7 @@ async function init() {
     showError("Could not load the form data: " + err.message);
     el("f-submit").disabled = true;
   }
+  loadTickets();
 }
 
 el("ticket-form").addEventListener("submit", async (event) => {
@@ -83,7 +186,6 @@ el("ticket-form").addEventListener("submit", async (event) => {
 
   const deviceValue = el("f-device").value;
   const body = {
-    requester_name: el("f-name").value.trim(),
     device_id: deviceValue === "" ? null : Number(deviceValue),
     category: el("f-category").value,
     priority: el("f-priority").value,
@@ -101,6 +203,7 @@ el("ticket-form").addEventListener("submit", async (event) => {
     el("f-device").value = "";
     el("f-priority").value = "Medium";
     window.scrollTo(0, 0);
+    loadTickets();
   } catch (err) {
     showError(err.message);
   } finally {

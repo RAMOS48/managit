@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>ManaGit - Log in</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <div class="box">
+    <h1>ManaGit</h1>
+    <p class="muted">Sign in to continue</p>
+    <div id="error" class="error" hidden></div>
+    <form id="login-form">
+      <label>Username
+        <input id="l-username" type="text" required maxlength="50" autocomplete="username" autofocus>
+      </label>
+      <label>Password
+        <input id="l-password" type="password" required maxlength="200" autocomplete="current-password">
+      </label>
+      <button id="l-submit" type="submit">Log in</button>
+    </form>
+  </div>
+  <script src="login.js"></script>
+</body>
+</html>
