@@ -6,8 +6,9 @@ from app.api.devices import compute_status
 from app.database import get_db
 from app.models.models import Device, MetricSnapshot, Ticket
 from app.schemas.device import MetricOut
+from app.security.auth import require_admin
 
-router = APIRouter(prefix="/api", tags=["monitoring"])
+router = APIRouter(prefix="/api", tags=["monitoring"], dependencies=[Depends(require_admin)])
 
 
 @router.get("/monitoring/summary")

@@ -5,7 +5,7 @@ from sqlalchemy import select
 from sqlalchemy.orm import Session
 
 from app.database import get_db
-from app.models.models import Device, Ticket
+from app.models.models import Device, Ticket, User
 from app.schemas.ticket import (
     Category,
     Priority,
@@ -14,6 +14,7 @@ from app.schemas.ticket import (
     TicketOut,
     TicketUpdate,
 )
+from app.security.auth import get_current_user, require_admin
 
 router = APIRouter(tags=["tickets"])
 
@@ -41,10 +42,10 @@ def ticket_out(db: Session, ticket: Ticket) -> TicketOut:
     )
 
 
-# ---------- Employee portal helpers (kept minimal on purpose) ----------
+# ---------- Any logged-in user (employee portal) ----------
 
 @router.get("/api/portal/options")
-def portal_options():
+def portal_options(user: User = Depends(get_current_user)):
     return {
         "categories": list(get_args(Category)),
         "priorities": list(get_args(Priority)),
@@ -52,20 +53,34 @@ def portal_options():
 
 
 @router.get("/api/portal/devices")
-def portal_devices(db: Session = Depends(get_db)):
-    rows = db.execute(select(Device.id, Device.hostname).order_by(Device.hostname)).all()
-    return [{"id": r.id, "hostname": r.hostname} for r in rows]
+def portal_devices(user: User = Depends(get_current_user), db: Session = Depends(get_db)):
+    """Admins see every device, employees only their own linked device."""
+    stmt = select(Device.id, Device.hostname).order_by(Device.hostname)
+    if user.role != "admin":
+        if user.linked_device_id is None:
+            return []
+        stmt = stmt.where(Device.id == user.linked_device_id)
+    return [{"id": r.id, "hostname": r.hostname} for r in db.execute(stmt).all()]
 
-
-# ---------- Tickets ----------
 
 @router.post("/api/tickets", response_model=TicketOut, status_code=201)
-def create_ticket(payload: TicketCreate, db: Session = Depends(get_db)):
-    if payload.device_id is not None and db.get(Device, payload.device_id) is None:
-        raise HTTPException(status_code=404, detail="Device not found")
+def create_ticket(
+    payload: TicketCreate,
+    user: User = Depends(get_current_user),
+    db: Session = Depends(get_db),
+):
+    if payload.device_id is not None:
+        if db.get(Device, payload.device_id) is None:
+            raise HTTPException(status_code=404, detail="Device not found")
+        if user.role != "admin" and payload.device_id != user.linked_device_id:
+            raise HTTPException(
+                status_code=403,
+                detail="You can only report a problem about your own device",
+            )
 
     ticket = Ticket(
-        requester_name=payload.requester_name,
+        requester_id=user.id,
+        requester_name=user.full_name or user.username,  # taken from the account, never from the form
         device_id=payload.device_id,
         category=payload.category,
         priority=payload.priority,
@@ -79,9 +94,24 @@ def create_ticket(payload: TicketCreate, db: Session = Depends(get_db)):
     return ticket_out(db, ticket)
 
 
-# ---------- Admin side ----------
+@router.get("/api/my/tickets", response_model=list[TicketOut])
+def my_tickets(
+    limit: int = Query(default=50, ge=1, le=200),
+    user: User = Depends(get_current_user),
+    db: Session = Depends(get_db),
+):
+    stmt = (
+        select(Ticket)
+        .where(Ticket.requester_id == user.id)
+        .order_by(Ticket.id.desc())
+        .limit(limit)
+    )
+    return [ticket_out(db, t) for t in db.scalars(stmt).all()]
 
-@router.get("/api/ticket-options")
+
+# ---------- Admin only ----------
+
+@router.get("/api/ticket-options", dependencies=[Depends(require_admin)])
 def ticket_options():
     return {
         "statuses": list(get_args(Status)),
@@ -90,7 +120,7 @@ def ticket_options():
     }
 
 
-@router.get("/api/tickets", response_model=list[TicketOut])
+@router.get("/api/tickets", response_model=list[TicketOut], dependencies=[Depends(require_admin)])
 def list_tickets(
     status: Status | None = None,
     limit: int = Query(default=100, ge=1, le=500),
@@ -102,7 +132,7 @@ def list_tickets(
     return [ticket_out(db, t) for t in db.scalars(stmt).all()]
 
 
-@router.get("/api/tickets/{ticket_id}", response_model=TicketOut)
+@router.get("/api/tickets/{ticket_id}", response_model=TicketOut, dependencies=[Depends(require_admin)])
 def get_ticket(ticket_id: int, db: Session = Depends(get_db)):
     ticket = db.get(Ticket, ticket_id)
     if ticket is None:
@@ -110,7 +140,7 @@ def get_ticket(ticket_id: int, db: Session = Depends(get_db)):
     return ticket_out(db, ticket)
 
 
-@router.patch("/api/tickets/{ticket_id}", response_model=TicketOut)
+@router.patch("/api/tickets/{ticket_id}", response_model=TicketOut, dependencies=[Depends(require_admin)])
 def update_ticket(ticket_id: int, payload: TicketUpdate, db: Session = Depends(get_db)):
     ticket = db.get(Ticket, ticket_id)
     if ticket is None:

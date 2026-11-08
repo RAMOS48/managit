@@ -5,6 +5,7 @@ from sqlalchemy.orm import Session
 
 from app.database import get_db
 from app.security.agent_auth import require_agent_token
+from app.security.auth import require_admin
 from app.models.models import Device, MetricSnapshot, utcnow
 from app.schemas.device import DeviceRegister, HeartbeatIn, DeviceOut, MetricOut
 
@@ -83,13 +84,13 @@ def heartbeat(payload: HeartbeatIn, db: Session = Depends(get_db)):
     return {"status": "ok", "device_id": device.id, "last_seen": now}
 
 
-@router.get("", response_model=list[DeviceOut])
+@router.get("", response_model=list[DeviceOut], dependencies=[Depends(require_admin)])
 def list_devices(db: Session = Depends(get_db)):
     devices = db.scalars(select(Device).order_by(Device.id)).all()
     return [to_out(db, d) for d in devices]
 
 
-@router.get("/{device_id}", response_model=DeviceOut)
+@router.get("/{device_id}", response_model=DeviceOut, dependencies=[Depends(require_admin)])
 def get_device(device_id: int, db: Session = Depends(get_db)):
     device = db.get(Device, device_id)
     if device is None:

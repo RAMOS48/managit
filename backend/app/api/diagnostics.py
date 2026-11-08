@@ -6,7 +6,7 @@ from sqlalchemy.orm import Session
 
 from app.api.devices import compute_status
 from app.database import get_db
-from app.models.models import Device, DiagnosticJob, DiagnosticResult, utcnow
+from app.models.models import Device, DiagnosticJob, DiagnosticResult, User, utcnow
 from app.schemas.diagnostic import (
     AgentJob,
     DiagnosticJobOut,
@@ -15,6 +15,7 @@ from app.schemas.diagnostic import (
     DiagnosticResultOut,
 )
 from app.security.agent_auth import require_agent_token
+from app.security.auth import require_admin
 from app.services.diagnostics import (
     MAX_ACTIVE_JOBS,
     MAX_SUMMARY,
@@ -46,13 +47,18 @@ def job_out(db: Session, job: DiagnosticJob) -> DiagnosticJobOut:
 
 # ---------- Admin side ----------
 
-@router.get("/api/diagnostics/operations")
+@router.get("/api/diagnostics/operations", dependencies=[Depends(require_admin)])
 def list_operations():
     return OPERATIONS
 
 
 @router.post("/api/devices/{device_id}/diagnostics", response_model=DiagnosticJobOut, status_code=201)
-def create_job(device_id: int, payload: DiagnosticRequest, db: Session = Depends(get_db)):
+def create_job(
+    device_id: int,
+    payload: DiagnosticRequest,
+    admin: User = Depends(require_admin),
+    db: Session = Depends(get_db),
+):
     device = db.get(Device, device_id)
     if device is None:
         raise HTTPException(status_code=404, detail="Device not found")
@@ -78,6 +84,7 @@ def create_job(device_id: int, payload: DiagnosticRequest, db: Session = Depends
 
     job = DiagnosticJob(
         device_id=device_id,
+        requested_by=admin.id,
         operation=payload.operation,
         parameters=json.dumps(clean),
         status="Pending",
@@ -88,7 +95,7 @@ def create_job(device_id: int, payload: DiagnosticRequest, db: Session = Depends
     return job_out(db, job)
 
 
-@router.get("/api/diagnostics/{job_id}", response_model=DiagnosticJobOut)
+@router.get("/api/diagnostics/{job_id}", response_model=DiagnosticJobOut, dependencies=[Depends(require_admin)])
 def get_job(job_id: int, db: Session = Depends(get_db)):
     expire_stale_jobs(db)
     job = db.get(DiagnosticJob, job_id)
@@ -97,7 +104,7 @@ def get_job(job_id: int, db: Session = Depends(get_db)):
     return job_out(db, job)
 
 
-@router.get("/api/devices/{device_id}/diagnostics", response_model=list[DiagnosticJobOut])
+@router.get("/api/devices/{device_id}/diagnostics", response_model=list[DiagnosticJobOut], dependencies=[Depends(require_admin)])
 def list_jobs(device_id: int, limit: int = Query(default=20, ge=1, le=100), db: Session = Depends(get_db)):
     if db.get(Device, device_id) is None:
         raise HTTPException(status_code=404, detail="Device not found")

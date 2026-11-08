@@ -5,12 +5,12 @@ from pydantic import BaseModel, ConfigDict, Field
 
 Category = Literal["Network", "Hardware", "Software", "Account/access", "Other"]
 Priority = Literal["Low", "Medium", "High"]
+Status = Literal["Open", "In Progress", "Resolved"]
 
 
 class TicketCreate(BaseModel):
     model_config = ConfigDict(str_strip_whitespace=True)
 
-    requester_name: str = Field(min_length=2, max_length=100)
     device_id: int | None = None
     category: Category
     priority: Priority = "Medium"
@@ -32,9 +32,6 @@ class TicketOut(BaseModel):
     resolution_note: str | None
     created_at: datetime
     updated_at: datetime
-
-
-Status = Literal["Open", "In Progress", "Resolved"]
 
 
 class TicketUpdate(BaseModel):
