@@ -1,0 +1,70 @@
+ManaGit end-to-end API test run: 2026-11-08 15:25
+Result: 67 passed, 0 failed, 0 skipped
+
+[PASS] T01 Health endpoint answers
+[PASS] T02 Wrong password is rejected (401)
+[PASS] T03 Unknown user gets the same message as a wrong password
+[PASS] T04 Admin can log in
+[PASS] T05 Session cookie is HttpOnly with SameSite
+[PASS] T06 Employee can log in
+[PASS] T07 Logged-in user can read /api/auth/me
+[PASS] T08 Anonymous /api/auth/me is refused (401)
+[PASS] T09 Anonymous users are blocked from admin endpoints (401)
+[PASS] T10 Employees are blocked from admin endpoints (403)
+[PASS] T11 Admin can use admin endpoints (200)
+[PASS] T12 Anonymous users cannot use the portal endpoints (401)
+[PASS] T13 Registration without a token is refused (401)
+[PASS] T14 Registration with a wrong token is refused (401)
+[PASS] T15 Registration with the agent token works
+[PASS] T16 Registering the same agent_id again does not duplicate the device
+[PASS] T17 Heartbeat with the token works
+[PASS] T18 Heartbeat without a token is refused (401)
+[PASS] T19 Device shows online with its latest metrics
+[PASS] T20 Heartbeat with CPU 150 is rejected (422)
+[PASS] T21 Heartbeat for an unknown device is rejected (404)
+[PASS] T22 Metrics history returns the snapshots
+[PASS] T23 Diagnostics reject: unknown operation (422)
+[PASS] T24 Diagnostics reject: option injection in host (422)
+[PASS] T25 Diagnostics reject: command injection in host (422)
+[PASS] T26 Diagnostics reject: port out of range (422)
+[PASS] T27 Diagnostics reject: unexpected parameter (422)
+[PASS] T28 Diagnostics reject: missing parameter (422)
+[PASS] T29 Admin can create a diagnostic job (Pending)
+[PASS] T30 Job polling without a token is refused (401)
+[PASS] T31 Agent can claim the pending job
+[PASS] T32 A claimed job is not handed out twice
+[PASS] T33 A claimed job shows as Running
+[PASS] T34 A result for another device's job is refused (403)
+[PASS] T35 Agent can submit the result
+[PASS] T36 Job ends as Completed with its result
+[PASS] T37 A second result for the same job is refused (409)
+[PASS] T38 Diagnostics cannot target an offline device (409)
+[PASS] T39 The real agent runs a diagnostic and reports back
+[PASS] T40 A simulated device answers with a labelled fake result
+[PASS] T41 Employee sees at most their own device in the form
+[PASS] T42 Employee can create a ticket
+[PASS] T43 Ticket identity comes from the account, not the form
+[PASS] T44 Ticket gets a reference and starts Open
+[PASS] T45 Employee cannot file a ticket about someone else's device (403)
+[PASS] T46 Invalid category is rejected (422)
+[PASS] T47 Invalid priority is rejected (422)
+[PASS] T48 Too short title is rejected (422)
+[PASS] T49 Too short description is rejected (422)
+[PASS] T50 HTML in a title is stored as plain text
+[PASS] T51 Employee sees their ticket in My tickets
+[PASS] T52 Employee cannot read tickets through admin endpoints (403)
+[PASS] T53 Employee cannot update tickets (403)
+[PASS] T54 Employee cannot request diagnostics (403)
+[PASS] T55 Admin sees the ticket in the list
+[PASS] T56 Resolving without a note is refused (422)
+[PASS] T57 Invalid status is refused (422)
+[PASS] T58 Empty update is refused (422)
+[PASS] T59 Updating an unknown ticket gives 404
+[PASS] T60 Admin can set the ticket In Progress
+[PASS] T61 Admin can resolve the ticket with a note
+[PASS] T62 Employee sees the resolution
+[PASS] T63 Summary counts are consistent with the device list
+[PASS] T64 Summary includes ticket counts
+[PASS] T65 Employee can log out
+[PASS] T66 The old session token is invalid after logout (401)
+[PASS] T67 Login is locked after 5 failed attempts (429 on the 6th)
