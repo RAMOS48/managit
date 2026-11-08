@@ -15,4 +15,6 @@ agent/config.json
 # Editor / OS
 .vscode/
 .DS_Store
-agent/state.json
+agent/state.json*.jar
+jar.txt
+.pytest_cache/
