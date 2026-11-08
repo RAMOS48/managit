@@ -13,7 +13,7 @@ from sqlalchemy import delete  # noqa: E402
 from app.database import Base, SessionLocal, engine  # noqa: E402
 from app.models import models  # noqa: E402, F401
 from app.models.models import MetricSnapshot, utcnow  # noqa: E402
-from app.api import devices, diagnostics, monitoring, tickets  # noqa: E402
+from app.api import auth, devices, diagnostics, monitoring, tickets  # noqa: E402
 
 METRIC_RETENTION_DAYS = 7
 FRONTEND_DIR = Path(__file__).resolve().parents[2] / "frontend"
@@ -32,6 +32,7 @@ async def lifespan(app: FastAPI):
 
 
 app = FastAPI(title="ManaGit - IT Management Platform", version="0.1.0", lifespan=lifespan)
+app.include_router(auth.router)
 app.include_router(devices.router)
 app.include_router(monitoring.router)
 app.include_router(diagnostics.router)
