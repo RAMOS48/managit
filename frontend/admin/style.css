@@ -67,3 +67,17 @@ pre.output { background: #1f2933; color: #e4e7eb; padding: 12px; border-radius: 
 tr.selected td { background: #eef4fb; }
 .passed { color: #11693a; font-weight: 600; }
 .notpassed { color: #c0392b; font-weight: 600; }
+
+/* Tickets */
+.badge.open { background: #fff3cd; color: #7a5b00; }
+.badge.in-progress { background: #d9e8fb; color: #174a85; }
+.badge.resolved { background: #d6f5e3; color: #11693a; }
+.prio { font-weight: 600; font-size: 13px; }
+.prio.high { color: #c0392b; }
+.prio.medium { color: #b7791f; }
+.prio.low { color: #52606d; }
+.desc { white-space: pre-wrap; word-break: break-word; font-size: 14px; background: #f8fafc; border: 1px solid #e4e7eb; border-radius: 6px; padding: 12px; margin: 0; }
+.edit-form { display: grid; gap: 14px; max-width: 640px; }
+.edit-form label { display: flex; flex-direction: column; gap: 4px; font-size: 13px; color: #52606d; }
+.edit-form select, .edit-form textarea { padding: 8px 10px; border: 1px solid #cbd2d9; border-radius: 6px; font-size: 14px; font-family: inherit; }
+.edit-form textarea { min-height: 120px; resize: vertical; }

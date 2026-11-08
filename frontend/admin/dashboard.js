@@ -92,7 +92,8 @@ function renderCards(summary) {
   document.getElementById("c-online").textContent = summary.online;
   document.getElementById("c-offline").textContent = summary.offline;
   document.getElementById("c-simulated").textContent = summary.simulated;
-  // Ticket counts arrive in block D; for now the card stays at "-"
+  document.getElementById("c-tickets").textContent = summary.open_tickets;
+  document.getElementById("c-progress").textContent = summary.in_progress_tickets;
 }
 
 async function load() {

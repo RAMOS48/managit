@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>ManaGit - Tickets</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <header>
+    <h1>ManaGit</h1>
+    <nav>
+      <a href="index.html">Dashboard</a>
+      <a href="tickets.html" class="active">Tickets</a>
+    </nav>
+  </header>
+  <main>
+    <div id="error" class="error" hidden></div>
+
+    <section class="panel">
+      <div class="toolbar">
+        <input id="search" type="search" placeholder="Search reference, title, requester, device...">
+        <select id="status-filter">
+          <option value="active">Active (Open + In Progress)</option>
+          <option value="Open">Open</option>
+          <option value="In Progress">In Progress</option>
+          <option value="Resolved">Resolved</option>
+          <option value="all">All</option>
+        </select>
+        <select id="priority-filter">
+          <option value="all">All priorities</option>
+          <option value="High">High</option>
+          <option value="Medium">Medium</option>
+          <option value="Low">Low</option>
+        </select>
+        <span class="spacer"></span>
+        <span class="muted" id="refreshed"></span>
+      </div>
+      <table>
+        <thead>
+          <tr>
+            <th>Reference</th><th>Priority</th><th>Title</th><th>Category</th>
+            <th>Device</th><th>Requester</th><th>Status</th><th>Created</th>
+          </tr>
+        </thead>
+        <tbody id="ticket-rows"></tbody>
+      </table>
+    </section>
+  </main>
+  <script src="app.js"></script>
+  <script src="tickets.js"></script>
+</body>
+</html>

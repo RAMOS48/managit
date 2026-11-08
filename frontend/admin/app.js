@@ -57,3 +57,27 @@ async function apiPost(path, body) {
   }
   return data;
 }
+
+async function apiPatch(path, body) {
+  const response = await fetch(path, {
+    method: "PATCH",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(body),
+  });
+  let data = null;
+  try {
+    data = await response.json();
+  } catch (err) {
+    // the response had no JSON body
+  }
+  if (!response.ok) {
+    let detail = response.status + " " + response.statusText;
+    if (data && typeof data.detail === "string") {
+      detail = data.detail;
+    } else if (data && Array.isArray(data.detail)) {
+      detail = data.detail.map((d) => d.msg).join("; ");
+    }
+    throw new Error(detail);
+  }
+  return data;
+}

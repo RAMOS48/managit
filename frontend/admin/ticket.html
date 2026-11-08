@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>ManaGit - Ticket</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <header>
+    <h1>ManaGit</h1>
+    <nav>
+      <a href="index.html">Dashboard</a>
+      <a href="tickets.html" class="active">Tickets</a>
+    </nav>
+  </header>
+  <main>
+    <a class="back" href="tickets.html">&larr; Back to tickets</a>
+    <div id="error" class="error" hidden></div>
+
+    <div class="page-title">
+      <h2 id="title">Loading...</h2>
+      <span id="status-badge"></span>
+    </div>
+
+    <section class="two-col" id="details">
+      <div class="panel">
+        <h3>Ticket details</h3>
+        <dl class="info" id="info"></dl>
+      </div>
+      <div class="panel">
+        <h3>Description</h3>
+        <div class="desc" id="desc"></div>
+      </div>
+    </section>
+
+    <section class="panel" id="manage">
+      <h3>Manage ticket</h3>
+      <form id="edit-form" class="edit-form">
+        <label>Status
+          <select id="e-status"></select>
+        </label>
+        <label>Linked device
+          <select id="e-device"></select>
+        </label>
+        <label>Notes / resolution
+          <textarea id="e-note" maxlength="5000"
+                    placeholder="What was checked or done? A note is required to resolve the ticket."></textarea>
+        </label>
+        <div><button id="e-save" class="btn" type="submit">Save changes</button></div>
+        <div id="e-message" class="msg-ok"></div>
+      </form>
+    </section>
+  </main>
+  <script src="app.js"></script>
+  <script src="ticket.js"></script>
+</body>
+</html>

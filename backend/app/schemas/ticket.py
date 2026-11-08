@@ -32,3 +32,14 @@ class TicketOut(BaseModel):
     resolution_note: str | None
     created_at: datetime
     updated_at: datetime
+
+
+Status = Literal["Open", "In Progress", "Resolved"]
+
+
+class TicketUpdate(BaseModel):
+    model_config = ConfigDict(str_strip_whitespace=True)
+
+    status: Status | None = None
+    resolution_note: str | None = Field(default=None, max_length=5000)
+    device_id: int | None = None
